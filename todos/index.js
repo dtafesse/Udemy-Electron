@@ -25,6 +25,7 @@ function createAddWindow() {
         width: 300,
         height: 200,
         title: 'Add New Todo',
+        // frame: false,
         webPreferences: {
             nodeIntegration: true
         }
