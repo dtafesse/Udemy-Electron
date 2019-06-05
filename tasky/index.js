@@ -1,27 +1,29 @@
 const path = require('path');
 const electron = require('electron');
-const TimerTray = require('./app/timer_tray');
+const { sprintf } = require('sprintf-js');
 
-const { app, BrowserWindow } = electron;
+const TimerTray = require('./app/timer_tray');
+const MainWindow = require('./app/main_window');
+
+const { app, ipcMain } = electron;
 
 let mainWindow;
+let tray;
 
 app.on("ready", () => {
-    mainWindow = new BrowserWindow({
-        width: 350,
-        height: 550,
-        resizable: false,
-        frame: false,
-        show: false,
-        webPreferences: {
-            nodeIntegration: true
-        }
-    });
-
-    mainWindow.loadURL(`file://${__dirname}/src/index.html`);
+    let url = `file://${__dirname}/src/index.html`;
+    mainWindow = new MainWindow(url);
 
     const iconName = process.platform === 'win32' ? 'windows-icon.png' : 'iconTemplate.png';
     const iconPath = path.join(__dirname, `./src/assets/${iconName}`);
     
-    new TimerTray(iconPath, mainWindow);
+    tray = new TimerTray(iconPath, mainWindow);
+});
+
+ipcMain.on('update-timer', (event, timeLeft) => {
+    if(process.platform === 'darwin'){
+        tray.setTitle(timeLeft);
+    }else if (process.platform === 'win32'){
+        tray.setToolTip(sprintf('Timer App %j', timeLeft));
+    }
 });
